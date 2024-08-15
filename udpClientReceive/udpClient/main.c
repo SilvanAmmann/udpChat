@@ -60,24 +60,21 @@ int main(void) {
 
   while (1){
     /* now let's send the messages */
-    printf("Type message:");
+    /*printf("Type message:");
     msg = fgets(obuf, BUFSIZE, stdin);
     if (sendto(fd, msg, strlen(msg), 0, (struct sockaddr *)&remaddr, slen)==-1) {
       perror("sendto");
       return -1;
-    }
+    }*/
 
     /* now receive an acknowledgment from the server */
-
-    //recvlen = recvfrom(fd, ibuf, sizeof(ibuf), 0, (struct sockaddr *)&remaddr, &slen);
-    //if (recvlen >= 0) {
-      //ibuf[recvlen] = '\0'; /* expect a printable string - terminate it */
-      //printf("response: \n%s\n", ibuf);
-    //} 
-    //else { /* timeout */
-      //printf("socket receive timeout\n");
-    //}
-  
+    recvlen = recvfrom(fd, ibuf, sizeof(ibuf), 0, (struct sockaddr *)&remaddr, &slen);
+    if (recvlen >= 0) {
+      ibuf[recvlen] = '\0'; /* expect a printable string - terminate it */
+      printf("response: \n%s\n", ibuf);
+    } else { /* timeout */
+      printf("socket receive timeout\n");
+    }
   }
   close(fd);
   return 0; /* ok */
