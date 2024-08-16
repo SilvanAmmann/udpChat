@@ -69,7 +69,7 @@ int main(void)
             printf("Client IP: %s, Port: %d\n", client_ip, ntohs(remaddr.sin_port));
             // Extract the address and the message
             char identifier = buf[0];
-            char* message = (char*)&buf[1];
+            char* message = (char*)&buf[0];
 
             // Get the forwarding IP address
             const char* ipAddress = getIPAddress(array, NUM_ADDRESSES, identifier);
