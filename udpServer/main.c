@@ -3,7 +3,8 @@
 #include <stdio.h> /* printf */
 #include <string.h> /* memset, strlen */
 #include <sys/socket.h> /* sockets */
-#include <unistd.h>
+#include <unistd.h> /* close */
+
 #define NUM_ADDRESSES 3
 #define BUFSIZE (10 * 1024) /* size of buffer, max 64 KByte */
 
@@ -25,13 +26,26 @@ addressTable* getAddressEntry(addressTable array[], int size, char identifier)
     return NULL;
 }
 
+void printAddressTable(addressTable array[], int size)
+{
+    printf("\nAddress Table:\n");
+    printf("Address  | IP Address    | Port\n");
+    printf("---------------------------------\n");
+    for (int i = 0; i < size; i++) {
+        if (array[i].address != '\0') { // Print only non-empty entries
+            printf("    %c    | %s | %d\n", array[i].address, array[i].ip, array[i].port);
+        }
+    }
+    printf("---------------------------------\n");
+}
+
 int main(void)
 {
     addressTable array[NUM_ADDRESSES];
 
     // Initialize the address field of each entry in the table
     for (int i = 0; i < NUM_ADDRESSES; i++) {
-        array[i].address = '0' + i; // Initialize with '0', '1', '2', etc.
+        array[i].address = '\0'; // Initialize address to indicate an empty entry
         strcpy(array[i].ip, ""); // Initialize IP to an empty string
         array[i].port = 0; // Initialize port to 0
     }
@@ -42,9 +56,9 @@ int main(void)
     socklen_t addrlen = sizeof(remaddr); /* length of addresses */
     int recvlen; /* # bytes received */
     int fd; /* socket file descriptor */
-    int msgcnt = 0; /* count # of messages we received */
     const int port = 1234; /* port used for socket */
     char client_ip[INET_ADDRSTRLEN]; /* buffer for client's IP address */
+
     /* create a UDP socket */
     if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("cannot create socket\n");
@@ -59,6 +73,7 @@ int main(void)
 
     if (bind(fd, (struct sockaddr*)&myaddr, sizeof(myaddr)) < 0) {
         perror("bind failed");
+        close(fd);
         return 0;
     }
 
@@ -70,7 +85,6 @@ int main(void)
             buf[recvlen] = '\0';
             printf("received message: \"%s\" (%d bytes)\n", buf, recvlen);
 
-            char client_ip[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &(remaddr.sin_addr), client_ip, INET_ADDRSTRLEN);
             int client_port = ntohs(remaddr.sin_port);
 
@@ -81,9 +95,12 @@ int main(void)
             // The second character of the buffer is the destination identifier
             char destination_identifier = buf[1];
 
-            // Update the sender information if not found in the table
+            printAddressTable(array, NUM_ADDRESSES);
+
+            // Update or add the sender information
             addressTable* sender_entry = getAddressEntry(array, NUM_ADDRESSES, sender_identifier);
             if (sender_entry == NULL) {
+                // Find an empty slot to add the new sender entry
                 for (int i = 0; i < NUM_ADDRESSES; i++) {
                     if (array[i].address == '\0') {
                         array[i].address = sender_identifier;
@@ -94,10 +111,15 @@ int main(void)
                     }
                 }
             } else {
-                printf("Sender entry found: %c, IP = %s, Port = %d\n", sender_entry->address, sender_entry->ip, sender_entry->port);
+                // Update existing sender entry
+                strcpy(sender_entry->ip, client_ip);
+                sender_entry->port = client_port;
+                printf("Updated sender entry: %c, IP = %s, Port = %d\n", sender_entry->address, sender_entry->ip, sender_entry->port);
             }
 
-            // Find the destination entry
+            printAddressTable(array, NUM_ADDRESSES);
+
+            // Find the destination entry and forward the message if it exists
             addressTable* destination_entry = getAddressEntry(array, NUM_ADDRESSES, destination_identifier);
             if (destination_entry != NULL) {
                 // Set up the forwarding address
