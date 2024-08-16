@@ -26,11 +26,15 @@ int main(void) {
     printf("socket created\n");
   }
 
+  /* allow multiple sockets to listen to the same port*/
+  int optval = 1;
+  setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+
   /* bind it to all local addresses and pick any port number */
   memset((char *)&myaddr, 0, sizeof(myaddr));
   myaddr.sin_family = AF_INET;
   myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  myaddr.sin_port = htons(0);
+  myaddr.sin_port = htons(1253);
 
   if (bind(fd, (struct sockaddr *)&myaddr, sizeof(myaddr)) < 0) {
     perror("bind failed");
