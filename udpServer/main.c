@@ -10,27 +10,31 @@
 static unsigned char buf[BUFSIZE]; /* receive buffer */
 typedef struct {
     char address;
-    char string[15];
+    char ip[INET_ADDRSTRLEN];
     int port;
 } addressTable;
-// Function to get the IP address for a given character identifier
-const char* getIPAddress(addressTable array[], int size, char identifier)
+
+// Function to get the addressTable entry by address identifier
+addressTable* getAddressEntry(addressTable array[], int size, char identifier)
 {
     for (int i = 0; i < size; i++) {
         if (array[i].address == identifier) {
-            return array[i].string;
+            return &array[i];
         }
     }
-    return NULL; // Return NULL if the identifier is not found
+    return NULL;
 }
 
 int main(void)
 {
-    addressTable array[NUM_ADDRESSES] = {
-        { '0', "146.136.90.44", 51417 },
-        { '1', "146.136.90.45", 51417 },
-        { '2', "146.136.90.46", 51417 },
-    };
+    addressTable array[NUM_ADDRESSES];
+
+    // Initialize the address field of each entry in the table
+    for (int i = 0; i < NUM_ADDRESSES; i++) {
+        array[i].address = '0' + i; // Initialize with '0', '1', '2', etc.
+        strcpy(array[i].ip, ""); // Initialize IP to an empty string
+        array[i].port = 0; // Initialize port to 0
+    }
 
     struct sockaddr_in myaddr; /* our address */
     struct sockaddr_in remaddr; /* remote address */
