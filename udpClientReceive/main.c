@@ -18,7 +18,7 @@ int main(void) {
   int recvlen;    /* # bytes in acknowledgment message */
   int port = 1234; /* port to be used */
   const char *msg;
-  const char *host = "146.136.90.45"; /* IP of host */
+  const char *host = "146.136.90.44"; /* IP of host */
   char ipBuf[64]; /* in case 'host' is a hostname and not an IP address, this will hold the IP address */
 
   /* create a socket */

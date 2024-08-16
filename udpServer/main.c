@@ -77,7 +77,7 @@ int main(void)
                 // Set up the forwarding address
                 memset((char*)&forwardaddr, 0, sizeof(forwardaddr));
                 forwardaddr.sin_family = AF_INET;
-                forwardaddr.sin_port = htons(51417); /* port number to forward to */
+                forwardaddr.sin_port = htons(1253); /* port number to forward to */
 
                 if (inet_pton(AF_INET, ipAddress, &forwardaddr.sin_addr) <= 0) {
                     fprintf(stderr, "Invalid IP address format: %s\n", ipAddress);
